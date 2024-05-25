@@ -1,5 +1,5 @@
+let tg = window.Telegram.WebApp;
 document.addEventListener('DOMContentLoaded', (event) => {
-  let tg = window.Telegram.WebApp;
   let coins = 0;
   let coinsPerClick = 1000;
   let currentRankIndex = 0;
