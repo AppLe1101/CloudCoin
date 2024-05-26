@@ -17,18 +17,21 @@ body {
   --bg-color: #f0f8ff;
   --text-color: #282f39;
   --progress-bg-color: #f3f9ff;
+  --active-btn-bg-color: #d7e2ed;
   --shadow: 0px 0px 10px 2px rgba(34, 60, 80, 0.2);
 }
 [data-theme="dark"] {
   --bg-color: #282f39;
   --text-color: azure;
   --progress-bg-color: #22272f;
+  --active-btn-bg-color: #1b1f27;
   --shadow: 0px 0px 10px 2px rgba(240, 248, 255, 0.2);
 }
 [data-theme="light"] {
   --bg-color: #f0f8ff;
   --text-color: #282f39;
   --progress-bg-color: #f3f9ff;
+  --active-btn-bg-color: #d7e2ed;
   --shadow: 0px 0px 10px 2px rgba(34, 60, 80, 0.2);
 }
 
@@ -152,6 +155,9 @@ header {
   width: 35px;
   height: 35px;
   color: var(--text-color);
+}
+.menu-btn.active {
+  background-color: var(--active-btn-bg-color);
 }
 
 .level-progress-bar {
