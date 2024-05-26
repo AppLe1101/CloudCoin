@@ -4,12 +4,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title></title>
-  <link rel="stylesheet" href="css/style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    window.addEventListener('load', () => {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      console.log(tg.initDataUnsafe);
+      console.log(tg.initDataUnsafe.user);
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        document.getElementById('user-name').textContent = tg.initDataUnsafe.user.first_name;
+      } else {
+        console.error('User data is undefinided or initDataUnsafe is not avaliable')
+      }
+    });
+  </script>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-theme="light">
   <header>
-    <h1 id="user-name">{user-name}</h1>
+    <h1 id="user-name">Loading...</h1>
     <div id="rank">League: Bronze</div>
   </header>
 
