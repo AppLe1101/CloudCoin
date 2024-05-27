@@ -5,7 +5,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
   }
   let coinsPerClick = 1000;
   let currentRankIndex = 0;
+  let autoEarningPerSecond = 0;
   const coinDisplay = document.getElementById('coins');
+  const earnDisplay = document.getElementById('earn-at-hour');
   const homeBtn = document.getElementById('home-btn');
   const mineBtn = document.getElementById('mine-btn');
   const settingsBtn = document.getElementById('settings-btn');
@@ -20,10 +22,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     { name: 'Legend', points: 10000000 }
   ];
 
+  let upgrades = [
+    { name: 'cloudListing', cost: 1000, earnings: 100, level: 0 },
+    { name: 'cloudStaking', cost: 200, earnings: 12, level: 0 }
+  ];
+
+  const defaultUpgrades = [
+    { name: 'cloudListing', cost: 1000, earnings: 100, level: 0 },
+    { name: 'cloudStaking', cost: 200, earnings: 12, level: 0 }
+  ];
+
   function saveData() {
     localStorage.setItem('coins', coins);
     localStorage.setItem('currentRankIndex', currentRankIndex);
     localStorage.setItem('coinsPerClick', coinsPerClick);
+    localStorage.setItem('autoEarningPerSecond', autoEarningPerSecond);
+    localStorage.setItem('upgrades', JSON.stringify(upgrades));
   }
   function loadData() {
     coins = parseInt(localStorage.getItem('coins') || 0);
@@ -32,13 +46,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
     currentRankIndex = parseInt(localStorage.getItem('currentRankIndex') || 0);
     coinsPerClick = parseInt(localStorage.getItem('coinsPerClick') || 1000);
+    autoEarningPerSecond = parseInt(localStorage.getItem('autoEarningPerSecond') || 0);
+    const savedUpgrades = JSON.parse(localStorage.getItem('upgrades') || '[]');
+    savedUpgrades.forEach((savedUpgrade, index) => {
+      if (upgrades[index]) {
+        upgrades[index].level = savedUpgrade.level;
+        upgrades[index].cost = savedUpgrade.cost;
+        upgrades[index].earnings = savedUpgrade.earnings;
+      }
+    });
   }
 
   function updateRank() {
     for (let i = ranks.length - 1; i >= 0; i--) {
       if (coins >= ranks[i].points && currentRankIndex < i) {
         currentRankIndex = i;
-        document.getElementById('rank').textContent = `League: ${ranks[i].name}`;
+        document.getElementById('rank').textContent = `${ranks[i].name}`;
         break;
       }
     }
@@ -55,6 +78,32 @@ document.addEventListener('DOMContentLoaded', (event) => {
       const progress = (coins / nextRankPoints) * 100;
       progressBar.style.width = `${progress}%`;
     }
+  }
+
+  function startAutoEarning() {
+    const coinDisplay = document.getElementById('coins');
+    if (!coinDisplay) {
+      console.error('Element with id "coinDisplay" not found');
+      return;
+    }
+    const earnDisplay = document.getElementById('earn-at-hour');
+    if (!earnDisplay) {
+      console.error('Element with id "earnDisplay" not found')
+    }
+
+    setInterval(() => {
+      coins += autoEarningPerSecond;
+      coinDisplay.textContent = coins;
+      earnDisplay.textContent = autoEarningPerSecond;
+      updateRank();
+      updateProgressBar();
+      saveData();
+    }, 1000);
+  }
+
+  function earnAtHourDisplayUpdate() {
+    const earnDisplay = document.getElementById('earn-at-hour');
+    earnDisplay.textContent = autoEarningPerSecond;
   }
 
   function loadPage(page) {
@@ -75,16 +124,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
       });
   }
 
+
+  /* Settings page */
   function setupSettingsPage() {
     const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    loadData();
     toggleThemeBtn.addEventListener('click', () => {
       const currentTheme = document.body.getAttribute('data-theme');
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
       document.body.setAttribute('data-theme', newTheme);
       localStorage.setItem('theme', newTheme);
     });
+    restartBtn.addEventListener('click', () => {
+      coins = 0;
+      currentRankIndex = 0;
+      autoEarningPerSecond = 0;
+      upgrades = defaultUpgrades;
+      saveData();
+      updateRank();
+    })
   }
 
+
+  /* Mine page */
   function setupMinePage() {
     const coinsPerTapDisplay = document.getElementById('coins-for-tap');
     if (!coinsPerTapDisplay) {
@@ -92,38 +155,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
       return;
     }
     const coinDisplay = document.getElementById('coins');
+    if (!coinDisplay) {
+      console.error('Element with if "coins" not found');
+      return;
+    }
     const coinsToUpDisplay = document.getElementById('coins-to-up');
-    const earnDisplay = document.getElementById('earn-at-hour');
-    const restartBtn = document.getElementById('restartBtn');
-    const upgradeBtn = document.getElementById('upgradeBtn');
     loadData();
     updateCoinDisplay();
-    coinDisplay.addEventListener('load', () => {
+    earnAtHourDisplayUpdate();
+    /*coinDisplay.addEventListener('load', () => {
       coinDisplay.textContent = coins;
-    });
-
-
-    if (restartBtn) {
-      restartBtn.addEventListener('click', () => {
-        if (coins > 0) {
-          coins -= 1000;
-          coinDisplay.textContent = coins;
-          updateCoinDisplay();
-        } else {
-          console.log('zero balance');
-        }
-        saveData();
-      });
-    }
-
-
-    if (upgradeBtn) {
-      upgradeBtn.addEventListener('click', () => {
-        applyUpgrade(10, 1);
-      });
-    }
-
-
+    });*/
 
     function coinsPerTapDisplayUpdate() {
       if (coinsPerTapDisplay) {
@@ -146,27 +188,59 @@ document.addEventListener('DOMContentLoaded', (event) => {
         coinsToUpDisplay.textContent = 'MAX';
       }
     }
-    coinsToUpUpdate();
-    coinsPerTapDisplayUpdate();
-    updateCoinDisplay();
 
-    function applyUpgrade(cost, increase) {
-      if (coins >= cost) {
-        coins -= cost;
-        coinsPerClick += increase;
-        updateCoinDisplay();
-        coinsPerTapDisplayUpdate();
-        saveData();
+    upgrades.forEach((upgrade, index) => {
+      const upgradeBtn = document.getElementById(`upgradeBtn${index}`);
+      if (upgradeBtn) {
+        upgradeBtn.addEventListener('click', () => {
+          if (coins >= upgrade.cost) {
+            coins -= upgrade.cost;
+            upgrade.level++;
+            autoEarningPerSecond += upgrade.earnings;
+            upgrade.cost = Math.round(upgrade.cost * 1.5);
+            updateUpgradeUI(index);
+            coinDisplay.textContent = coins;
+            saveData();
+          }
+        });
+      }
+
+    });
+
+    function updateUpgradeUI(index) {
+      const upgrade = upgrades[index];
+      const upgradeCostDisplay = document.getElementById(`upgradeCost${index}`);
+      const upgradeEarningsDisplay = document.getElementById(`upgradeEarnings${index}`);
+      if (upgradeCostDisplay) {
+        upgradeCostDisplay.textContent = `${upgrade.cost}`;
+      }
+      if (upgradeEarningsDisplay) {
+        upgradeEarningsDisplay.textContent = `+${upgrade.earnings}/s (level ${upgrade.level})`;
       }
     }
+
+    upgrades.forEach((_, index) => updateUpgradeUI(index));
+
+    startAutoEarning();
+    coinsToUpUpdate();
+    coinsPerTapDisplayUpdate();
+    coinDisplay.textContent = coins;
+    updateCoinDisplay();
   }
 
+
+  /* Home page */
   function setupHomePage() {
     const clickBtn = document.getElementById('clickBtn');
     const coinDisplay = document.getElementById('coins');
     const coinsPerTapDisplay = document.getElementById('coins-for-tap');
     const coinsToUpDisplay = document.getElementById('coins-to-up');
     const progressBar = document.getElementById('level-to-up');
+    loadData();
+    updateCoinDisplay();
+    updateProgressBar();
+    earnAtHourDisplayUpdate();
+
 
     if (clickBtn) {
       clickBtn.addEventListener('click', () => {
@@ -205,13 +279,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
       }
 
-      document.getElementById('rank').textContent = `League: ${ranks[currentRankIndex].name}`;
+      document.getElementById('rank').textContent = `${ranks[currentRankIndex].name}`;
       updateProgressBar();
+      coinDisplay.textContent = coins;
+      updateCoinDisplay();
       coinsPerTapDisplayUpdate();
       coinsToUpUpdate();
-      coinDisplay.textContent = localStorage.getItem('coins') || 0;
+      startAutoEarning()
     }
   }
+
+  /* Updates */
   function updateCoinDisplay() {
     if (coinDisplay) {
       coinDisplay.textContent = coins;
@@ -225,7 +303,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.body.setAttribute('data-theme', savedTheme);
 
+  /*setInterval(updateCoinDisplay, 1000);*/
+  loadData();
+  startAutoEarning();
   loadPage('home');
-
-  setInterval(updateCoinDisplay, 1000);
 });
