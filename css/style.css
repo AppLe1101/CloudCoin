@@ -11,7 +11,7 @@
   user-select: none;
 }
 body {
-  background: var(--bg-color);
+  background: var(--tg-theme-bg-color);
 }
 
 :root {
