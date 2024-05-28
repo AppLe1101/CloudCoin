@@ -11,27 +11,27 @@
   user-select: none;
 }
 body {
-  background: var(--tg-theme-bg-color);
+  background: var(--bg-color);
 }
 
 :root {
-  --bg-color: #f0f8ff;
-  --text-color: #282f39;
-  --progress-bg-color: #f3f9ff;
+  --bg-color: var(--tg-theme-bg-color);
+  --text-color: var(--tg-theme-text-color);
+  --progress-bg-color: var(--tg-theme-secondary-bg-color);
   --active-btn-bg-color: #d7e2ed;
   --shadow: 0px 0px 10px 2px rgba(34, 60, 80, 0.2);
 }
 [data-theme="dark"] {
-  --bg-color: #282f39;
-  --text-color: azure;
-  --progress-bg-color: #22272f;
+  --bg-color: var(--tg-theme-bg-color);
+  --text-color: var(--tg-theme-text-color);
+  --progress-bg-color: var(--tg-theme-secondary-bg-color);
   --active-btn-bg-color: #1b1f27;
   --shadow: 0px 0px 10px 2px rgba(240, 248, 255, 0.2);
 }
 [data-theme="light"] {
-  --bg-color: #f0f8ff;
-  --text-color: #282f39;
-  --progress-bg-color: #f3f9ff;
+  --bg-color: var(--tg-theme-bg-color);
+  --text-color: var(--tg-theme-text-color);
+  --progress-bg-color: var(--tg-theme-secondary-bg-color);
   --active-btn-bg-color: #d7e2ed;
   --shadow: 0px 0px 10px 2px rgba(34, 60, 80, 0.2);
 }
